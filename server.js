@@ -1,11 +1,25 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+module.exports = app;
 
-app.get("/", (req, res, next) => {
-  res.send("Hello World!");
-});
+const PORT = 3001;
 
-app.listen(port, () => {
-  console.log(`Listening in at http://localhost:${port}`);
-});
+// Add middleware for handling CORS requests from index.html.
+var cors = require("cors");
+app.use(cors());
+
+// Add middware for parsing request bodies here.
+var bodyParser = require("body-parser");
+app.use(bodyParser.json());
+
+// Mount the apiRouter below at the '/api' path.
+const apiRouter = require("./server/api/api.js");
+app.use("/api", apiRouter);
+
+// This conditional is here for testing purposes:
+if (!module.parent) {
+  // To start the server listening at PORT below:
+  app.listen(PORT, () => {
+    console.log(`Listening to port ${PORT}`);
+  });
+}
