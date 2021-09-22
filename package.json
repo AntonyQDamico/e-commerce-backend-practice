@@ -14,7 +14,10 @@
     "chai": "^4.3.4",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "express-promise-router": "^4.1.0",
     "mocha": "^9.1.1",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
     "pg": "^8.7.1",
     "supertest": "^6.1.6"
   }

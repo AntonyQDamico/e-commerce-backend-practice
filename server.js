@@ -12,6 +12,11 @@ app.use(cors());
 var bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
+// Add authentication middleware
+var passport = require("passport");
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Mount the apiRouter below at the '/api' path.
 const apiRouter = require("./server/api/api.js");
 app.use("/api", apiRouter);

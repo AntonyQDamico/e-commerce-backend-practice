@@ -2,17 +2,12 @@ const db = require("./index.js");
 
 function registerUser(userObject) {
   if (isValidUser(userObject)) {
-    console.log(userObject.firstName);
-    console.log(userObject.lastName);
-    console.log(userObject.email);
-    console.log(userObject.password);
     db.query(
       `INSERT INTO users (first_name, last_name, email, password)` +
         `VALUES ('${userObject.firstName}', '${userObject.lastName}', '${userObject.email}', '${userObject.password}');`,
       [],
       (err, result) => {
         if (err) {
-          console.log(err);
           throw new Error("Something went wrong with the request");
         }
         return result;
@@ -38,4 +33,20 @@ function isValidUser(instance) {
   return true;
 }
 
-module.exports = { registerUser };
+async function findUserByEmail(email) {
+  const user = await db.query(
+    `SELECT * FROM users WHERE email = '${email}';`,
+    [],
+    (err, result) => {
+      if (err) {
+        throw new Error("Something went wrong with the request");
+      }
+      console.log(`Results.rows is: ${result.rows}`);
+      return result.rows;
+    }
+  );
+  console.log(`User Value returned :${user}`);
+  return user;
+}
+
+module.exports = { registerUser, findUserByEmail };
