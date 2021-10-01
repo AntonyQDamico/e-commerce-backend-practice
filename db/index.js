@@ -12,4 +12,5 @@ module.exports = {
   query: (text, params, callback) => {
     return pool.query(text, params, callback);
   },
+  asyncQuery: (text, params) => pool.query(text, params),
 };
