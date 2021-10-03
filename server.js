@@ -4,6 +4,26 @@ module.exports = app;
 
 const PORT = 3001;
 
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      title: "e-commerce-api",
+      description: "Handle User, Product, Cart and Order changes",
+      contact: {
+        name: "Antony Damico",
+      },
+      servers: [`https://localhost:${PORT}`],
+    },
+  },
+  apis: ["./server/*/*.js"],
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 // Add middleware for handling CORS requests from index.html.
 var cors = require("cors");
 app.use(cors());
