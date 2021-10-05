@@ -2,6 +2,23 @@ const db = require("../../db/index.js");
 const express = require("express");
 const usersRoute = express.Router();
 
+/**
+ * @swagger
+ * definitions:
+ *   users:
+ *     properties:
+ *       id:
+ *         type: integer
+ *       email:
+ *         type: string
+ *       password:
+ *         type: string
+ *       first_name:
+ *         type: string
+ *       last_name:
+ *         type: string
+ */
+
 // add :userId and the returned user to the request body if it exists, otherwise 404
 usersRoute.param("userId", (req, res, next, userId) => {
   db.query("SELECT * FROM users WHERE id = $1;", [userId], (err, result) => {
@@ -16,6 +33,19 @@ usersRoute.param("userId", (req, res, next, userId) => {
 });
 
 // GET /api/users return all users
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     description: Returns all users
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: An array of users
+ *         schema:
+ *           $ref: '#/definitions/users'
+ */
 usersRoute.get("/", (req, res, next) => {
   db.query("SELECT * FROM users", [], (err, result) => {
     if (err) {
@@ -27,11 +57,53 @@ usersRoute.get("/", (req, res, next) => {
 });
 
 // GET /api/users/:userId return a single user by ID
+/**
+ * @swagger
+ * /api/users/{userId}:
+ *   get:
+ *     description: Returns a single user
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: a single user object
+ *         schema:
+ *           $ref: '#/definitions/users'
+ */
 usersRoute.get("/:userId", (req, res, next) => {
   res.status(200).send(req.chosenUser);
 });
 
 // PUT /api/users/:userId edit a single user by ID
+/**
+ * @swagger
+ * /api/users/{userId}:
+ *   put:
+ *     description: update a users's information
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *       - name: user
+ *         description: user object
+ *         in: body
+ *         type: object
+ *         schema:
+ *           $ref: '#/definitions/users'
+ *     responses:
+ *       200:
+ *         description: user updated
+ */
 usersRoute.put("/:userId", (req, res, next) => {
   let newUser = req.body;
   if (isValidUser(newUser)) {
@@ -54,7 +126,25 @@ usersRoute.put("/:userId", (req, res, next) => {
     );
   }
 });
+
 // DELETE /api/users/:userId delete a single user by ID
+/**
+ * @swagger
+ * /api/users/{userId}:
+ *   delete:
+ *     description: delete a single user
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *     responses:
+ *       204:
+ *         description: user removed
+ */
 usersRoute.delete("/:userId", (req, res, next) => {
   db.query("DELETE FROM users WHERE id = $1", [req.userId], (err, result) => {
     if (err) {
@@ -66,6 +156,12 @@ usersRoute.delete("/:userId", (req, res, next) => {
 });
 
 // Utility Functions
+
+/*
+ * isValidUser checks to see if the user object provided has the proper parameters and types
+ * @param {object}   instance    the user object you are looking to check
+ * @return {bool}                returns true if the product object contains the valid types
+ */
 function isValidUser(instance) {
   instance.firstName = instance.firstName || "";
   instance.lastName = instance.lastName || "";

@@ -31,6 +31,28 @@ passport.use(
   })
 );
 
+/**
+ * @swagger
+ * /api/login:
+ *   post:
+ *     description: perform a login attempt
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: user
+ *         description: user object
+ *         in: body
+ *         required: true
+ *         type: object
+ *         properties:
+ *           username:
+ *             type: string
+ *           password:
+ *             type: string
+ *     responses:
+ *       200:
+ *         description: login success
+ */
 loginRoute.post("/", passport.authenticate("local"), (req, res, next) => {
   console.log("got to login Route Body");
   console.log(req.user);

@@ -2,6 +2,27 @@ const db = require("../../db/index.js");
 const express = require("express-promise-router");
 const cartsRoute = new express();
 
+/**
+ * @swagger
+ * definitions:
+ *   carts:
+ *     properties:
+ *       id:
+ *         type: integer
+ *       user_id:
+ *         type: integer
+ *       created:
+ *         type: date
+ *   carts_items:
+ *     properties:
+ *       cart_id:
+ *         type: integer
+ *       product_id:
+ *         type: integer
+ *       quantity:
+ *         type: integer
+ */
+
 // add :userId and the users cart to the reqest body if it exists, otherwise 404
 cartsRoute.param("userId", (req, res, next, userId) => {
   db.query(
@@ -20,6 +41,19 @@ cartsRoute.param("userId", (req, res, next, userId) => {
 });
 
 // GET /api/carts return all carts
+/**
+ * @swagger
+ * /api/carts:
+ *   get:
+ *     description: Returns all carts
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: An array of carts
+ *         schema:
+ *           $ref: '#/definitions/carts'
+ */
 cartsRoute.get("/", (req, res, next) => {
   db.query("SELECT * FROM carts", [], (err, result) => {
     if (err) {
@@ -31,6 +65,26 @@ cartsRoute.get("/", (req, res, next) => {
 });
 
 // POST /api/carts create a new cart
+/**
+ * @swagger
+ * /api/carts:
+ *   post:
+ *     description: create a new cart
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: userId parameter in an object
+ *         in: body
+ *         required: true
+ *         type: object
+ *         properties:
+ *           userId:
+ *             type: integer
+ *     responses:
+ *       201:
+ *         description: new cart created
+ */
 cartsRoute.post("/", (req, res, next) => {
   db.query(
     "INSERT INTO carts (user_id, created) VALUES ($1 , NOW())",
@@ -46,11 +100,47 @@ cartsRoute.post("/", (req, res, next) => {
 });
 
 // GET /api/carts/:userId return a specific cart by userID
+/**
+ * @swagger
+ * /api/carts/{userId}:
+ *   get:
+ *     description: Returns a single product
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: a single cart object
+ *         schema:
+ *           $ref: '#/definitions/carts'
+ */
 cartsRoute.get("/:userId", (req, res, next) => {
   res.send(req.chosenUserCart);
 });
 
 // DELETE /api/carts/:userId delete a specific cart by userID
+/**
+ * @swagger
+ * /api/carts/{userId}:
+ *   delete:
+ *     description: delete a single cart
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *     responses:
+ *       204:
+ *         description: cart removed
+ */
 cartsRoute.delete("/:userId", (req, res, next) => {
   db.query(
     "DELETE FROM carts WHERE user_id = $1",
@@ -64,7 +154,27 @@ cartsRoute.delete("/:userId", (req, res, next) => {
     }
   );
 });
+
 // view all items in a users cart
+/**
+ * @swagger
+ * /api/carts/{userId}/items:
+ *   get:
+ *     description: Returns all items in a user's cart
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: an array of carts_items objects
+ *         schema:
+ *           $ref: '#/definitions/carts_items'
+ */
 cartsRoute.get("/:userId/items", (req, res, next) => {
   db.query(
     "SELECT * FROM carts_items WHERE cart_id = $1",
@@ -80,6 +190,29 @@ cartsRoute.get("/:userId/items", (req, res, next) => {
 });
 
 // Add product to cart
+/**
+ * @swagger
+ * /api/carts/{userId}/items:
+ *   post:
+ *     description: Add an item to a user's cart
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *       - name: carts_items
+ *         description: carts_items object
+ *         in: body
+ *         type: object
+ *         schema:
+ *           $ref: '#/definitions/carts_items'
+ *     responses:
+ *       201:
+ *         description: product added to cart
+ */
 cartsRoute.post("/:userId/items", (req, res, next) => {
   db.query(
     "INSERT INTO carts_items (cart_id, product_id, quantity) VALUES ($1, $2, $3);",
@@ -93,7 +226,32 @@ cartsRoute.post("/:userId/items", (req, res, next) => {
     }
   );
 });
+
 // Remove product from cart
+/**
+ * @swagger
+ * /api/carts/{userId}/items:
+ *   delete:
+ *     description: delete a product from a cart
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *       - name: productId
+ *         description: productId object
+ *         in: body
+ *         type: object
+ *         properties:
+ *           productId:
+ *             type: integer
+ *     responses:
+ *       204:
+ *         description: cart removed
+ */
 cartsRoute.delete("/:userId/items", (req, res, next) => {
   db.query(
     "DELETE FROM carts_items WHERE cart_id = $1 AND product_id = $2;",
@@ -109,6 +267,32 @@ cartsRoute.delete("/:userId/items", (req, res, next) => {
 });
 
 // Update product quatity in cart
+/**
+ * @swagger
+ * /api/carts/{userId}/items:
+ *   put:
+ *     description: update the quantity of a product in a users cart
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *       - name: carts_items
+ *         description: carts_items object
+ *         in: body
+ *         type: object
+ *         properties:
+ *           productId:
+ *             type: integer
+ *           quantity:
+ *             type: integer
+ *     responses:
+ *       200:
+ *         description: quantity updated
+ */
 cartsRoute.put("/:userId/items", (req, res, next) => {
   db.query(
     "UPDATE carts_items SET quantity = $1 WHERE cart_id = $2 AND product_id = $3",
@@ -124,6 +308,23 @@ cartsRoute.put("/:userId/items", (req, res, next) => {
 });
 
 // POST /api/cart/:userId/checkout checkout the cart and create an order.
+/**
+ * @swagger
+ * /api/carts/{userId}/checkout:
+ *   post:
+ *     description: checkout the cart and create an order
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: userId
+ *         description: user's id number
+ *         in: path
+ *         required: true
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: order now placed
+ */
 cartsRoute.post("/:userId/checkout", async (req, res, next) => {
   const validCart = await isValidCart(req.chosenUserCart.id);
   const validPayment = isValidPayment();
@@ -168,7 +369,13 @@ cartsRoute.post("/:userId/checkout", async (req, res, next) => {
     res.status(400).send("Cart is invalid");
   }
 });
+
 //Utility Functions
+/*
+ * isValidCart checks to see if the provided cart object conatains enough stock to meet the order
+ * @param {integer}   cartId    the ID number of the cart you are trying to check
+ * @return {bool}               returns true if the cart object contains the valid types
+ */
 async function isValidCart(cartId) {
   const { rows } = await db.asyncQuery(
     "SELECT * FROM carts_items WHERE cart_id = $1",
@@ -188,10 +395,20 @@ async function isValidCart(cartId) {
   return validCart;
 }
 
+/*
+ * isValidPayment checks to see if the provided product object conatains the valid types or sets defaults
+ * @param {none}                 Currently none
+ * @return {bool}                returns true if the payment method is valid
+ */
 function isValidPayment() {
   return true;
 }
 
+/*
+ * calculateCartPrice takes a cartId and sums the price of all products in the cart
+ * @param {integer}   cartId      the product object you are looking to check
+ * @return {number}               returns monetary value of the cart in question
+ */
 async function calculateCartPrice(cartId) {
   const { rows } = await db.asyncQuery(
     "SELECT * FROM carts_items WHERE cart_id = $1",
@@ -212,4 +429,5 @@ async function calculateCartPrice(cartId) {
   }
   return runningTotal;
 }
+
 module.exports = cartsRoute;
